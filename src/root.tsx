@@ -22,13 +22,15 @@ export default function Root() {
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Body>
-        <ErrorBoundary>
-          <Suspense fallback={<div>Loading</div>}>
-            <Routes>
-              <FileRoutes />
-            </Routes>
-          </Suspense>
-        </ErrorBoundary>
+        <div class="container mx-auto flex min-h-screen items-center justify-center">
+          <ErrorBoundary>
+            <Suspense fallback={<div>Loading</div>}>
+              <Routes>
+                <FileRoutes />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </div>
         <Scripts />
       </Body>
     </Html>

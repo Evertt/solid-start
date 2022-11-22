@@ -1,4 +1,4 @@
-import { Show, createSignal } from "solid-js"
+import { Show, For, createSignal } from "solid-js"
 import { useParams, useRouteData } from "solid-start"
 import { FormError } from "solid-start/data"
 import {
@@ -47,8 +47,21 @@ export default function Login() {
 
   const [loginType, setLoginType] = createSignal<LoginType>("login")
 
+  const fields = [
+    {
+      field: "username",
+      type: "text",
+      placeholder: "kody",
+    },
+    {
+      field: "password",
+      type: "password",
+      placeholder: "twixrox",
+    },
+  ] as const
+
   return (
-    <main>
+    <main class="prose rounded-lg border p-8 shadow-md">
       <h1>Login</h1>
       <Form>
         <input
@@ -56,54 +69,87 @@ export default function Login() {
           name="redirectTo"
           value={params.redirectTo ?? "/"}
         />
+
         <fieldset>
-          <legend>Login or Register?</legend>
-          <label>
-            <input
-              type="radio"
-              name="loginType"
-              value="login"
-              checked={loginType() === "login"}
-              onChange={() => setLoginType("login")}
-            />
-            Login
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="loginType"
-              value="register"
-              checked={loginType() === "register"}
-              onChange={() => setLoginType("register")}
-            />
-            Register
-          </label>
+          <legend class="inline-block w-full text-center">
+            Login or Register?
+          </legend>
+          <div class="mb-2 flex justify-around">
+            <For each={loginTypes}>
+              {type => (
+                <label class="h-7">
+                  <input
+                    type="radio"
+                    name="loginType"
+                    value={type}
+                    class="mr-2"
+                    checked={loginType() === type}
+                    onChange={() => setLoginType(type)}
+                  />
+                  <span class="inline-block h-7 align-middle">{type}</span>
+                </label>
+              )}
+            </For>
+          </div>
         </fieldset>
-        <div>
-          <label for="username">Username</label>
-          <input id="username" name="username" placeholder="kody" />
-        </div>
-        <Show when={loggingIn.error?.fieldErrors?.username}>
-          <p role="alert">{loggingIn.error.fieldErrors.username}</p>
-        </Show>
-        <div>
-          <label for="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            placeholder="twixrox"
-          />
-        </div>
-        <Show when={loggingIn.error?.fieldErrors?.password}>
-          <p role="alert">{loggingIn.error.fieldErrors.password}</p>
-        </Show>
+
+        <For each={fields}>
+          {({ field, ...rest }) => (
+            <>
+              <div class="my-2">
+                <label for={field} class="inline-block w-20 capitalize">
+                  {field}
+                </label>
+                <input
+                  id={field}
+                  class={`
+                    mt-1
+                    block
+                    w-full
+                    rounded-md
+                    border-gray-300
+                    shadow-sm
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                  `}
+                  name={field}
+                  {...rest}
+                />
+              </div>
+              <Show when={loggingIn.error?.fieldErrors?.[field]}>
+                <p role="alert">{loggingIn.error.fieldErrors[field]}</p>
+              </Show>
+            </>
+          )}
+        </For>
+
         <Show when={loggingIn.error?.message}>
           <p role="alert" id="error-message">
             {loggingIn.error.message}
           </p>
         </Show>
-        <button type="submit" style="text-transform: capitalize">
+
+        <button
+          type="submit"
+          class={`
+            mt-8
+            block
+            w-full
+            rounded-md
+            border-gray-300
+            bg-blue-500
+            py-1
+            capitalize
+            text-white
+            shadow-sm
+            focus:border-indigo-300
+            focus:ring
+            focus:ring-indigo-200
+            focus:ring-opacity-50
+          `}
+        >
           {data() ? loginType() : ""}
         </button>
       </Form>

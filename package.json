@@ -4,13 +4,15 @@
     "dev": "solid-start dev",
     "build": "solid-start build",
     "start": "solid-start start",
-    "format": "prettier --plugin-search-dir . --write src"
+    "format": "prettier --plugin-search-dir . --write src",
+    "format:watch": "onchange 'src/**/*.{html,js,jsx,ts,tsx}' -- prettier --plugin-search-dir . --write {{changed}}"
   },
   "type": "module",
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
     "@tailwindcss/typography": "^0.5.8",
     "autoprefixer": "^10.4.13",
+    "onchange": "^7.1.0",
     "postcss": "^8.4.19",
     "prettier": "^2.7.1",
     "prettier-plugin-tailwindcss": "^0.1.13",
