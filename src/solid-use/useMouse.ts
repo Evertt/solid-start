@@ -7,7 +7,9 @@ import {
   UnionToUniqueArrayConst,
   MaybeAccessor,
   makeAccessor,
+  isAccessor,
 } from "./utils"
+import { isPlainObject } from "lodash-es"
 
 type TrackedEventTypes = keyof Pick<
   GlobalEventHandlersEventMap,
@@ -71,14 +73,42 @@ export interface UseMouseOptions extends ConfigurableWindow {
 type MouseSourceType = "mouse" | "touch"
 
 export function useMouse<T extends HTMLElement>(
-  target?: Ref<T>,
+  options?: MaybeAccessor<UseMouseOptions>
+)
+
+export function useMouse<T extends HTMLElement>(
+  target: Ref<T>,
+  options?: MaybeAccessor<UseMouseOptions>
+)
+
+export function useMouse<T extends HTMLElement>(
+  targetOrOptions?: Ref<T> | MaybeAccessor<UseMouseOptions>,
   options: MaybeAccessor<UseMouseOptions> = {}
 ) {
+  const targetTypeMap = (window?: Window) => ({
+    undefined: () => window?.document.body,
+    object: () => window?.document.body,
+    function: () => {
+      const result = (targetOrOptions as () => any)()
+      if (result == null) return undefined
+      if (result instanceof HTMLElement) return result
+      return window?.document.body
+    },
+  })
+
+  if (typeof targetOrOptions === "object") options = targetOrOptions
+  else if (
+    typeof targetOrOptions !== "undefined" &&
+    targetOrOptions() != null &&
+    !(targetOrOptions() instanceof HTMLElement)
+  )
+    options = targetOrOptions as Accessor<UseMouseOptions>
+
   const optionsFn = makeAccessor(options)
 
   const element: Ref<T> = () => {
     const { window = defaultWindow } = optionsFn()
-    return target ? target() : (window?.document.body as T)
+    return targetTypeMap(window)[typeof targetOrOptions]()
   }
 
   let eventHandlerIsAttached = false
@@ -101,7 +131,12 @@ export function useMouse<T extends HTMLElement>(
   const [elementWidth, setElementWidth] = createSignal(0)
   const [elementHeight, setElementHeight] = createSignal(0)
 
-  const [isOutside, setIsOutside] = createSignal(!!target?.())
+  const isInside =
+    !targetOrOptions ||
+    isPlainObject(targetOrOptions) ||
+    (typeof targetOrOptions === "function" && isPlainObject(targetOrOptions()))
+
+  const [isOutside, setIsOutside] = createSignal(!isInside)
 
   const reset = () => {
     const { initialValue = { x: 0, y: 0 } } = optionsFn()
@@ -160,7 +195,8 @@ export function useMouse<T extends HTMLElement>(
     const { handleOutside = true, window = defaultWindow } = optionsFn()
 
     if (!window) return
-    if (!target || !target()) return
+    if (!sourceType()) return
+    if (element() === window.document.body) return
     if (!elementIsMounted(element)) return
 
     const [x, y] = [bodyX(), bodyY()]

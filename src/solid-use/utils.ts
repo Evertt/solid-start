@@ -3,8 +3,8 @@ import type { EventTarget } from "./useEventListener"
 
 export type Ref<T extends EventTarget> = Accessor<T | undefined>
 type NotAccessor<T> = T extends Accessor<any> ? never : T
-export type MaybeAccessor<T> = Accessor<T> | NotAccessor<T>
-// export type MaybeAccessor<T> = T | Accessor<T>
+// export type MaybeAccessor<T> = Accessor<T> | NotAccessor<T>
+export type MaybeAccessor<T> = T | Accessor<T>
 export const isAccessor = <T>(arg: MaybeAccessor<T>): arg is Accessor<T> =>
   typeof arg === "function"
 export const makeAccessor = <T>(arg: MaybeAccessor<T>) =>
